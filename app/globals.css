@@ -1,0 +1,98 @@
+body{
+  background-color: darkslategray;
+}
+
+.header{
+  margin: 3% auto;
+  text-align: center;
+  font-size: 40px;
+  color: white;
+  
+}
+
+.board-main{
+  width: 80%;
+  margin: auto;
+}
+
+.create-btn{
+  text-align: center;
+  display: block;
+  margin-bottom: 30px;
+  margin-left: 75%;
+  width: 100px;
+  height: 50px;
+  border-radius: 10px;
+}
+
+.create-btn:hover{
+  color: #0070f3;
+  cursor: pointer;
+}
+
+.post-container{
+  background: white;
+  border: 1px solid gray;
+  width: 80%;
+  height: 30px;
+  margin: auto;
+  border-radius: 3px;
+}
+
+.post-writer{
+  display: inline-block;
+  text-align: center;
+  width: 10%;
+}
+
+.post-title{
+  display: inline-block;
+  text-align: center;
+  width: 80%;
+}
+
+.post-views{
+  display: inline-block;
+  text-align: center;
+  width: 10%;
+}
+
+.page-number-txt{
+  padding: 20px;
+}
+
+.page-number-txt:hover {
+  color: #0070f3;
+  cursor: pointer;
+}
+
+.page-bar{
+  margin: auto;
+  margin-top: 30px;
+  width: 80%;
+  background: white;
+  text-align: center;
+}
+
+.home-header{
+  margin-top: 50px;
+  text-align: center;
+  color: white;
+  font-size: xx-large;
+  font-weight: bold;
+}
+
+.home-main{
+  margin-top: 30px;
+  text-align: center;
+  font-size: large;  
+}
+
+.home-main a {
+  color: white; /* 기본 색상 (방문하지 않은 링크) */
+  text-decoration: none; /* 밑줄 제거 (선택사항) */
+}
+
+.home-main a:hover{
+  color: aqua;
+}
