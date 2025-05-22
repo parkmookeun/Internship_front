@@ -15,6 +15,10 @@ export default function Home() {
     router.push('/boards/new');
   };
 
+  const handlePostDetail = (id) => {
+    router.push(`/boards/${id}`)
+  }
+
   //useEffect
   useEffect(() =>{
     //데이터 가져오기
@@ -59,7 +63,11 @@ export default function Home() {
     <div className="board-main">
     {
       boards.map((post, index) => {
-        return <div className="post-container" key={index}>
+        return <div className="post-container" key={index}
+                    onClick={() => {
+                      handlePostDetail(index+1)
+                    }} 
+          >
           <span className="post-writer">{post.writer}</span> 
           <span className="post-title">{post.title}</span>
           <span className="post-views">조회 수: {post.views}</span>
@@ -68,7 +76,7 @@ export default function Home() {
     }
     <div className="page-bar"> 
     {
-      createArray(totalAmount/10).map((num, index) => {
+      createArray(Math.ceil(totalAmount/10)).map((num, index) => {
         return <span className="page-number-txt" 
                      onClick={() => {
                       setPageNumber(index+1)
