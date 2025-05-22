@@ -13,6 +13,21 @@ export default function PostDetail() {
   const params = useParams();
   const id = params.id;
 
+  const handleDelete = async () => {
+    
+    try {
+      await fetch(`http://localhost:8080/api/boards/${id}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      
+      alert("게시글이 성공적으로 삭제되었습니다!")
+      router.push(`/boards`);
+    } catch (error) {
+      alert('게시글 삭제 실패');
+    }
+  };
+
   console.log(id);
   //useEffect
   useEffect(() =>{
@@ -73,7 +88,14 @@ export default function PostDetail() {
                                 router.push(`/boards/${id}/edit`)
                             }}
                     >수정</button></td>
-                    <td colSpan={2}><button onClick={() => {
+                    <td><button
+                            onClick={() => {
+                                if(confirm('게시글을 정말로 삭제하시겠습니까?')){
+                                    handleDelete();
+                                }
+                            }}
+                    >삭제</button></td>
+                    <td><button onClick={() => {
                         router.push('/boards')
                     }}
                     >목록으로</button></td>
