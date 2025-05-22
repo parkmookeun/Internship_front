@@ -65,8 +65,8 @@ export default function Home() {
       boards.map((post, index) => {
         return <div className="post-container" key={index}
                     onClick={() => {
-                      handlePostDetail(index+1)
-                    }} 
+                      handlePostDetail(post.id)
+                    }}
           >
           <span className="post-writer">{post.writer}</span> 
           <span className="post-title">{post.title}</span>
