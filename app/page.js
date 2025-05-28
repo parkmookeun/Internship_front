@@ -1,4 +1,7 @@
-import Pagination from "@/util/pagination";
+
+'use client'
+
+import ConfirmModal from "@/components/ConfirmModal";
 
 export default function Home(){
   return(

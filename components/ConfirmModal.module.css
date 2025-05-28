@@ -1,0 +1,32 @@
+.modal{
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* 검은색 50% 투명 */
+  display: flex;
+  justify-content: center; /* 가로 중앙 */
+  z-index: 1000;
+  align-items: flex-start;  /* items-center 대신 */
+  padding-top: 128px;       /* pt-32와 같음 */
+}
+
+.modal_content {
+  background-color: white;
+  width: 50%;              /* 부모의 50% 너비 */
+  max-width: 400px;        /* 최대 크기 제한 */
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center !important;
+}
+
+.modal_content button{
+    margin-right: 20px;
+    width: 50px;
+    height: 40px;
+    border-radius: 5px;
+    background-color: #aed581;
+    border: none;
+}

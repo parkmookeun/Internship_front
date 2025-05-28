@@ -3,6 +3,9 @@ import { useEffect } from "react"
 import { useState } from 'react'
 import { useRouter } from 'next/navigation';
 import { useParams } from "next/navigation";
+import Pagination from "@/util/pagination";
+import ConfirmModal from "@/components/ConfirmModal";
+import AlertModal from "@/components/AlertModal";
 
 export default function BoardEditPage(){
     const [loading, setLoading] = useState(true);
@@ -11,14 +14,15 @@ export default function BoardEditPage(){
     const [writer, setWriter] = useState('');
     const [title, setTitle] = useState('');
     const [contents, setContents] = useState('');
-
+    const [showConfirmModal, setConfirmModal] = useState(false);
+    const [showAlertModal, setAlertModal] = useState(false);
     const router = useRouter();
     const params = useParams();
     const id = params.id;
 
     const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     //제목 빈칸 검증
     if (!title.trim()) {
     alert('제목을 입력해주세요!');
@@ -38,12 +42,28 @@ export default function BoardEditPage(){
         body: JSON.stringify({ title, contents }),
       });
       
-      alert("게시글이 성공적으로 수정되었습니다!")
-      router.push(`/boards/${id}`);
+      // alert("게시글이 성공적으로 수정되었습니다!")
+      setAlertModal(true);
+
+      
     } catch (error) {
-      alert('게시글 수정 실패');
+      console.log(error)
     }
   };
+
+  const handleCancelModal = () => {
+      setConfirmModal(false);
+    }
+
+  const handleConfirmModal = () => {
+      setConfirmModal(false);
+      router.push(`/boards/${id}`)
+    }
+ 
+  const handleAlertModal = () => {
+    setAlertModal(false);
+    router.push('/boards');
+  }
 
     //useEffect
       useEffect(() =>{
@@ -105,13 +125,21 @@ export default function BoardEditPage(){
                 ></textarea><br/>
                 </div>
                 <button type="submit">수정</button>
-                <button type="button" onClick={() => 
-                    {
-                        if(confirm('수정을 취소하시겠습니까?')){
-                            router.push(`/boards/${id}`)
-                        }
-                    }
-                    }>취소</button>
+                <button type="button" onClick={() => {setConfirmModal(true)}}>취소</button>
+                
+                {/* ConfirmModal과 AlertModal 요소 */}
+                {showConfirmModal && <ConfirmModal
+                title="수정 취소"
+                contents="수정"
+                whenCancel={handleCancelModal}
+                whenConfirm={handleConfirmModal}
+                ></ConfirmModal>}
+
+                {showAlertModal && <AlertModal
+                title="수정 확인"
+                contents="수정"
+                whenConfirm={handleAlertModal}
+                ></AlertModal>}
             </form>
         </div>
     )

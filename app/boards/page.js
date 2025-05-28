@@ -65,10 +65,7 @@ export default function Home() {
     {
       boards.map((post, index) => {
         return <div className="post-container" key={index}
-                    onClick={() => {
-                      handlePostDetail(post.id)
-                    }}
-          >
+                    onClick={() => {handlePostDetail(post.id)}}>
           <span className="post-writer">{post.writer}</span> 
           <span className="post-title">{post.title}</span>
           <span className="post-views">조회 수: {post.views}</span>

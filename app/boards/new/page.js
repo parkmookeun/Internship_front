@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import ConfirmModal from "@/components/ConfirmModal";
+import AlertModal from "@/components/AlertModal";
 
 export default function NewBoard(){
 
@@ -9,7 +11,35 @@ export default function NewBoard(){
   const [title, setTitle] = useState('');
   const [writer, setWriter] = useState('');
   const [contents, setContents] = useState('');
+  const [showConfirmModal, setConfirmModal] = useState(false);
+  const [showAlertModal, setAlertModal] = useState(false);
+
+   const handleCancelModal = () => {
+      setConfirmModal(false);
+    }
+
+  const handleConfirmModal = () => {
+      setConfirmModal(false);
+      router.push('/boards')
+    }
   
+  const handleAlertConfirm = async () => {
+  setAlertModal(false);
+  
+  // 여기서 실제 등록 로직 실행
+  try {
+    await fetch('http://localhost:8080/api/boards', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, writer, contents }),
+    });
+    
+    router.push('/boards');
+  } catch (error) {
+    alert('게시글 등록 실패');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -29,19 +59,7 @@ export default function NewBoard(){
       alert('내용을 입력해주세요!');
       return;
     }
-
-    try {
-      await fetch('http://localhost:8080/api/boards', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, writer, contents }),
-      });
-      
-      alert("게시글이 성공적으로 등록되었습니다!")
-      router.push('/boards');
-    } catch (error) {
-      alert('게시글 등록 실패');
-    }
+    setAlertModal(true);
   };
 
     return(
@@ -71,14 +89,22 @@ export default function NewBoard(){
                 ></textarea><br/>
                 </div>
                 <div className="create-btn-style">
-                <button type="submit">등록</button>
-                <button type="button" onClick={() => 
-                  {         
-                    if(confirm('게시글 등록을 취소하시겠습니까?')){
-                      router.push('/boards')
-                    }
-                }}>취소</button>
+                <button type="button" onClick={() => setAlertModal(true)}>등록</button>
+                <button type="button" onClick={() => setConfirmModal(true)}>취소</button>
                 </div>
+
+                {/* 등록 버튼 하고 취소 버튼 */}
+                {showAlertModal && <AlertModal
+                                title="등록 확인"
+                                contents="등록"
+                                whenConfirm={handleAlertConfirm}
+                                ></AlertModal>}
+                {showConfirmModal && <ConfirmModal
+                                title="등록 취소"
+                                contents="등록"
+                                whenCancel={handleCancelModal}
+                                whenConfirm={handleConfirmModal}
+                                ></ConfirmModal>}
             </form>
         </div>
     )

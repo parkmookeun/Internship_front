@@ -3,12 +3,15 @@ import { useEffect } from "react"
 import { useState } from 'react'
 import { useRouter } from 'next/navigation';
 import { useParams } from "next/navigation";
+import ConfirmModal from "@/components/ConfirmModal";
 
 export default function PostDetail() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [board, setBoard] = useState({});
+  const [showConfirmModal, setConfirmModal] = useState(false);
+
   const router = useRouter();
   const params = useParams();
   const id = params.id;
@@ -21,7 +24,7 @@ export default function PostDetail() {
         headers: { 'Content-Type': 'application/json' },
       });
       
-      alert("게시글이 성공적으로 삭제되었습니다!")
+      // alert("게시글이 성공적으로 삭제되었습니다!")
       router.push(`/boards`);
     } catch (error) {
       alert('게시글 삭제 실패');
@@ -94,22 +97,20 @@ export default function PostDetail() {
                             }}
                             style={{margin: '5px'}}
                     >수정</button>
-                    <button
-                            onClick={() => {
-                                if(confirm('게시글을 정말로 삭제하시겠습니까?')){
-                                    handleDelete();
-                                }
-                            }}
-                    >삭제</button>
-                    <button onClick={() => {
-                        router.push('/boards')
-                    }}
+                    <button onClick={() => {setConfirmModal(true)}}>삭제</button>
+                    <button onClick={() => {router.push('/boards')}}
                     style={{marginLeft: '200px'}}
                     >목록으로</button></td>
                 </tr>
             </tbody>
         </table>
         </div>
+        {showConfirmModal && <ConfirmModal
+          title="삭제 확인"
+          contents="삭제"
+          whenCancel={() => {setConfirmModal(false)}}
+          whenConfirm={() => {handleDelete()}}
+        ></ConfirmModal>}
     </div>
   )
 }
