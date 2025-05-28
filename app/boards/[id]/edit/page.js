@@ -57,7 +57,7 @@ export default function BoardEditPage(){
             if (!response.ok) {
               throw new Error('사용자 데이터를 가져오는데 실패했습니다');
             }
-    
+            
             //데이터 추출
             const data = await response.json();
     

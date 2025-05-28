@@ -2,6 +2,7 @@
 import { useEffect } from "react"
 import { useState } from 'react'
 import { useRouter } from 'next/navigation';
+import Pagination from '@/util/pagination'
 
 export default function Home() {
   const [loading, setLoading] = useState(true);
@@ -10,7 +11,7 @@ export default function Home() {
   const [pageNumber, setPageNumber] = useState(1);
   const [totalAmount, setTotalAmount] = useState(0);
   const router = useRouter();
-
+    
   const handleCreatePost = () => {
     router.push('/boards/new');
   };
@@ -74,28 +75,13 @@ export default function Home() {
           </div>
       })
     }
-    <div className="page-bar"> 
-    {
-      createArray(Math.ceil(totalAmount/10)).map((num, index) => {
-        return <span className="page-number-txt" 
-                     onClick={() => {
-                      setPageNumber(index+1)
-                     }}
-        key={index}>{num}</span>
-      })
-    }
-    </div>
+    
+    {/* 페이지네이션 바 */}
+    <Pagination currentPageNumber={pageNumber} lastPageNumber={Math.ceil(totalAmount/10)}
+     onPageChange={(newPage) => { setPageNumber(newPage)}} />
     </div>
     </div>
   )
 }
 
-//페이지 바에 들어가는 숫자들의 배열 생성
-function createArray(n) {
-  const result = [];
-  for (let i = 1; i <= n; i++) {
-    result.push(i);
-  }
-  return result;
-}
 

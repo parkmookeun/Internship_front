@@ -1,3 +1,5 @@
+import Pagination from "@/util/pagination";
+
 export default function Home(){
   return(
     <div>
