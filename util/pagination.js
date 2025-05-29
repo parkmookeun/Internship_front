@@ -16,7 +16,7 @@ export default function Pagination({currentPageNumber, lastPageNumber, onPageCha
                 {MakePageElement(currentPageNumber-1, 0, spreadCount, lastPageNumber,onPageChange)} 
                 {(currentPageNumber !== 1) && (currentPageNumber !== lastPageNumber) ? <li onClick={() => onPageChange(currentPageNumber)}>{currentPageNumber}</li> : ''}
                 {MakePageElement(currentPageNumber+1, 1, spreadCount, lastPageNumber,onPageChange)}
-                <li onClick={() => onPageChange(lastPageNumber)}>{lastPageNumber}</li>
+                {(lastPageNumber !== 1) && <li onClick={() => onPageChange(lastPageNumber)}>{lastPageNumber}</li>}
             </ul>
         </div>
     )
@@ -45,7 +45,7 @@ function MakePageElement(start, dir, cnt, limit, onPageChange) {
                 break;
             }
 
-            // console.log("오른쪽에 " + (start+i) + "추가")
+            console.log("오른쪽에 " + (start+i) + "추가")
             items.push(<li key={start+i} onClick={() => onPageChange(start+i)}>{start+i}</li>)
         }
 

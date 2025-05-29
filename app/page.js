@@ -10,7 +10,7 @@ export default function Home(){
       게시판 프로젝트 v2.0.0 버전입니다!
       </div>
       <div className="home-main">
-        <a href="/boards"> &lt; 게시글 목록 바로가기 &gt; </a>
+        <a href="/posts"> &lt; 게시글 목록 바로가기 &gt; </a>
       </div>
     </div>
   )

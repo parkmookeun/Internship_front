@@ -20,7 +20,7 @@ export default function NewBoard(){
 
   const handleConfirmModal = () => {
       setConfirmModal(false);
-      router.push('/boards')
+      router.push('/posts')
     }
   
   const handleAlertConfirm = async () => {
@@ -28,13 +28,13 @@ export default function NewBoard(){
   
   // 여기서 실제 등록 로직 실행
   try {
-    await fetch('http://localhost:8080/api/boards', {
+    await fetch('http://localhost:8080/api/posts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title, writer, contents }),
     });
     
-    router.push('/boards');
+    router.push('/posts');
   } catch (error) {
     alert('게시글 등록 실패');
     }

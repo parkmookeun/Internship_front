@@ -19,13 +19,13 @@ export default function PostDetail() {
   const handleDelete = async () => {
     
     try {
-      await fetch(`http://localhost:8080/api/boards/${id}`, {
+      await fetch(`http://localhost:8080/api/posts/${id}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
       });
       
       // alert("게시글이 성공적으로 삭제되었습니다!")
-      router.push(`/boards`);
+      router.push(`/posts`);
     } catch (error) {
       alert('게시글 삭제 실패');
     }
@@ -39,7 +39,7 @@ export default function PostDetail() {
     async function fetchBoard() {
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:8080/api/boards/${id}`);
+        const response = await fetch(`http://localhost:8080/api/posts/${id}`);
         
         if (!response.ok) {
           throw new Error('사용자 데이터를 가져오는데 실패했습니다');
@@ -93,12 +93,12 @@ export default function PostDetail() {
                 <tr style={{textAlign: 'center', padding: 'none'}}>
                     <td colSpan={3}><button
                             onClick={() => {
-                                router.push(`/boards/${id}/edit`)
+                                router.push(`/posts/${id}/edit`)
                             }}
                             style={{margin: '5px'}}
                     >수정</button>
                     <button onClick={() => {setConfirmModal(true)}}>삭제</button>
-                    <button onClick={() => {router.push('/boards')}}
+                    <button onClick={() => {router.push('/posts')}}
                     style={{marginLeft: '200px'}}
                     >목록으로</button></td>
                 </tr>

@@ -36,7 +36,7 @@ export default function BoardEditPage(){
       }
 
     try {
-      await fetch(`http://localhost:8080/api/boards/${id}`, {
+      await fetch(`http://localhost:8080/api/posts/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title, contents }),
@@ -57,12 +57,12 @@ export default function BoardEditPage(){
 
   const handleConfirmModal = () => {
       setConfirmModal(false);
-      router.push(`/boards/${id}`)
+      router.push(`/posts/${id}`)
     }
  
   const handleAlertModal = () => {
     setAlertModal(false);
-    router.push('/boards');
+    router.push('/posts');
   }
 
     //useEffect
@@ -72,7 +72,7 @@ export default function BoardEditPage(){
         async function fetchBoard() {
           try {
             setLoading(true);
-            const response = await fetch(`http://localhost:8080/api/boards/${id}`);
+            const response = await fetch(`http://localhost:8080/api/posts/${id}`);
             
             if (!response.ok) {
               throw new Error('사용자 데이터를 가져오는데 실패했습니다');
