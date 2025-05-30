@@ -151,7 +151,7 @@ body{
 
 .board-detail-container{
   width: 40%;
-  height: 400px;
+  height: auto;
   margin: auto;
   background-color: white;
   color: black;

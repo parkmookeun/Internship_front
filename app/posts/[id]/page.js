@@ -10,6 +10,8 @@ export default function PostDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [board, setBoard] = useState({});
+  const [commentWriter, setCommentWriter] = useState('');
+  const [commentContents, setCommentContents] = useState('');
   const [showConfirmModal, setConfirmModal] = useState(false);
 
   const router = useRouter();
@@ -30,6 +32,21 @@ export default function PostDetail() {
       alert('게시글 삭제 실패');
     }
   };
+
+  const handlePostComment = async () => {
+    // 여기서 실제 등록 로직 실행
+  try {
+    await fetch(`http://localhost:8080/api/posts/${id}/comments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ writer: commentWriter, contents: commentContents }),
+    });
+    
+    window.location.reload();
+  } catch (error) {
+      console.log("댓글 등록 실패")
+    }
+  }
 
   console.log(id);
   //useEffect
@@ -64,6 +81,8 @@ export default function PostDetail() {
 
   //출력해보기 -> 
   console.log(board);
+  console.log('commentList:', board.commentList)
+  console.log('isArray:', Array.isArray(board.commentList))
   return (
     <div>
         <div className="board-detail-container">
@@ -104,6 +123,25 @@ export default function PostDetail() {
                 </tr>
             </tbody>
         </table>
+        {/* 여기에다가 댓글 목록 표시 */}
+       {board?.commentList?.map((comment, index) => (
+              <div key={index}>
+                <hr/>
+                <p>{comment.writer}</p>
+                <p>{comment.contents}</p>
+              </div>
+            ))}
+        <div>
+          <form action={handlePostComment} method="POST"> 
+            <input placeholder="작성자 입력"
+                   value={commentWriter} required
+                   onChange={(e) => setCommentWriter(e.target.value)} />
+            <input placeholder="댓글 입력"
+                   value={commentContents} required
+                   onChange={(e) => setCommentContents(e.target.value)} />
+            <button type="submit">등록</button>
+          </form>
+        </div>
         </div>
         {showConfirmModal && <ConfirmModal
           title="삭제 확인"
