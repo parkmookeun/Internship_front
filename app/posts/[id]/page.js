@@ -3,7 +3,10 @@ import { useEffect } from "react"
 import { useState } from 'react'
 import { useRouter } from 'next/navigation';
 import { useParams } from "next/navigation";
+import { useComments } from "@/hooks/useComments";
 import ConfirmModal from "@/components/ConfirmModal";
+import CommentList from "@/components/CommentList";
+
 
 export default function PostDetail() {
 
@@ -17,6 +20,19 @@ export default function PostDetail() {
   const router = useRouter();
   const params = useParams();
   const id = params.id;
+
+  // ✅ 추가: 파일 다운로드 함수
+  const handleDownload = (fileUrl, fileName) => {
+  // 새 탭에서 파일 열기 (브라우저가 다운로드 처리)
+  window.open(fileUrl, '_blank');
+  };
+ 
+  // ✅ 추가: 이미지 파일인지 확인하는 함수
+  const isImageFile = (filePath) => {
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'];
+    const extension = filePath.toLowerCase().substring(filePath.lastIndexOf('.'));
+    return imageExtensions.includes(extension);
+  };
 
   const handleDelete = async () => {
     
@@ -33,7 +49,8 @@ export default function PostDetail() {
     }
   };
 
-  const handlePostComment = async () => {
+  const handlePostComment = async (e) => {
+    e.preventDefault();
     // 여기서 실제 등록 로직 실행
   try {
     await fetch(`http://localhost:8080/api/posts/${id}/comments`, {
@@ -75,6 +92,8 @@ export default function PostDetail() {
         setLoading(false);
       }
     }
+
+
         
     fetchBoard();
   },[])
@@ -109,6 +128,7 @@ export default function PostDetail() {
                     <td style={{padding: '8px'}}>내용:</td>
                     <td colSpan={2}>{board.contents}</td>
                 </tr>
+                
                 <tr style={{textAlign: 'center', padding: 'none'}}>
                     <td colSpan={3}><button
                             onClick={() => {
@@ -118,21 +138,115 @@ export default function PostDetail() {
                     >수정</button>
                     <button onClick={() => {setConfirmModal(true)}}>삭제</button>
                     <button onClick={() => {router.push('/posts')}}
-                    style={{marginLeft: '200px'}}
+                    style={{marginLeft: '50px'}}
                     >목록으로</button></td>
                 </tr>
             </tbody>
         </table>
+         {/* ✅ 추가: 게시글 내용 아래에 이미지 표시 영역 */}
+        {board.fileList && board.fileList.length > 0 && (
+          <div style={{
+            margin: '20px auto', 
+            width: '80%', 
+            padding: '15px', 
+            border: '1px solid #ddd', 
+            borderRadius: '5px', 
+            backgroundColor: '#f9f9f9'
+          }}>
+            <h4 style={{margin: '0 0 15px 0'}}>📷 첨부 이미지</h4>
+            <div style={{display: 'flex', flexDirection: 'column', gap: '15px'}}>
+              {board.fileList
+                .filter(file => isImageFile(file.filePath)) // 이미지 파일만 필터링
+                .map((file, index) => (
+                  <div key={index} style={{textAlign: 'center'}}>
+                    <img 
+                      src={file.filePath} 
+                      alt={file.originalName}
+                      style={{
+                        maxWidth: '100%', 
+                        maxHeight: '500px', 
+                        height: 'auto',
+                        border: '1px solid #ddd',
+                        borderRadius: '5px',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                      }}
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        console.error('이미지 로드 실패:', file.filePath);
+                      }}
+                    />
+                    <p style={{
+                      margin: '8px 0 0 0', 
+                      fontSize: '14px', 
+                      color: '#666',
+                      fontStyle: 'italic'
+                    }}>
+                      {file.originalName}
+                    </p>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}                      
+        {/*별도 첨부파일 영역 (테이블 외부에 표시하고 싶을 경우) */}
+        {board.fileList && board.fileList.length > 0 && (
+          <div style={{
+            margin: '20px auto', 
+            width: '80%', 
+            padding: '15px', 
+            border: '1px solid #ddd', 
+            borderRadius: '5px', 
+            backgroundColor: '#f9f9f9'
+          }}>
+            <h4 style={{margin: '0 0 10px 0'}}>📎 첨부파일</h4>
+            <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
+              {board.fileList.map((file, index) => {
+                const fileName = file.originalName
+                return (
+                  <div 
+                    key={index} 
+                    style={{
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'space-between',
+                      padding: '8px 12px', 
+                      backgroundColor: 'white', 
+                      borderRadius: '3px',
+                      border: '1px solid #eee'
+                    }}
+                  >
+                    <span>{fileName}</span>
+                    <button 
+                      onClick={() => handleDownload(file.filePath, fileName)}
+                      style={{
+                        padding: '6px 12px', 
+                        fontSize: '12px', 
+                        backgroundColor: '#28a745', 
+                        color: 'white', 
+                        border: 'none', 
+                        borderRadius: '3px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      다운로드
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
         {/* 여기에다가 댓글 목록 표시 */}
-       {board?.commentList?.map((comment, index) => (
+        <CommentList postId={id}></CommentList>
+       {/* {board?.commentList?.map((comment, index) => (
               <div key={index}>
                 <hr/>
                 <p>{comment.writer}</p>
                 <p>{comment.contents}</p>
               </div>
-            ))}
+            ))} */}
         <div>
-          <form action={handlePostComment} method="POST"> 
+          <form onSubmit={handlePostComment} method="POST"> 
             <input placeholder="작성자 입력"
                    value={commentWriter} required
                    onChange={(e) => setCommentWriter(e.target.value)} />
@@ -165,3 +279,4 @@ const formatDateWithPadding = (dateString) => {
   
   return `${year}년 ${month}월 ${day}일 ${hours}시 ${minutes}분 ${seconds}초`;
 };
+

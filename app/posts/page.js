@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation';
 import { fetchBoards } from '@/util/boardApi';
-import Pagination from '@/util/pagination'
+import Pagination from '@/components/Pagination'
 
 export default function Home() {
   const [loading, setLoading] = useState(true);

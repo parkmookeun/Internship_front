@@ -13,7 +13,19 @@ export default function NewBoard(){
   const [contents, setContents] = useState('');
   const [showConfirmModal, setConfirmModal] = useState(false);
   const [showAlertModal, setAlertModal] = useState(false);
+  //파일 상태 관리
+  const [selectedFiles, setSelectedFiles] = useState([]);
 
+  //파일 선택 핸들러
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    setSelectedFiles(files);
+  };
+
+  //파일 제거 핸들러
+   const removeFile = (index) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
    const handleCancelModal = () => {
       setConfirmModal(false);
     }
@@ -28,10 +40,19 @@ export default function NewBoard(){
   
   // 여기서 실제 등록 로직 실행
   try {
+    const formData = new FormData();
+
+    formData.append('title', title);
+    formData.append('writer', writer);
+    formData.append('contents', contents);
+
+    selectedFiles.forEach(file => {
+      formData.append('files', file);
+    })
+
     await fetch('http://localhost:8080/api/posts', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, writer, contents }),
+      body: formData,
     });
     
     router.push('/posts');
@@ -88,6 +109,40 @@ export default function NewBoard(){
                           cols={50} rows={10} 
                 ></textarea><br/>
                 </div>
+                {/* ✅ 추가: 파일 업로드 영역 */}
+                <div className="input-area">
+                  <label htmlFor="input-files" className="input-label">파일 첨부: </label><br/>
+                  <input 
+                    type="file" 
+                    id="input-files" 
+                    multiple 
+                    accept="image/*,.pdf,.doc,.docx"
+                    onChange={handleFileChange}
+                  />
+                  <br/>
+                  
+                  {/* 선택된 파일 목록 표시 */}
+                  {selectedFiles.length > 0 && (
+                    <div className="selected-files" style={{marginTop: '10px'}}>
+                      <p>선택된 파일:</p>
+                      <ul>
+                        {selectedFiles.map((file, index) => (
+                          <li key={index} style={{display: 'flex', alignItems: 'center', marginBottom: '5px'}}>
+                            <span>{file.name} ({(file.size / 1024).toFixed(1)}KB)</span>
+                            <button 
+                              type="button" 
+                              onClick={() => removeFile(index)}
+                              style={{marginLeft: '10px', padding: '2px 6px', fontSize: '12px'}}
+                            >
+                              삭제
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+
                 <div className="create-btn-style">
                 <button type="button" onClick={() => setAlertModal(true)}>등록</button>
                 <button type="button" onClick={() => setConfirmModal(true)}>취소</button>

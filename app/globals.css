@@ -47,13 +47,13 @@ body{
 .post-writer{
   display: inline-block;
   text-align: center;
-  width: 10%;
+  width: 20%
 }
 
 .post-title{
   display: inline-block;
   text-align: center;
-  width: 75%;
+  width: 60%;
 }
 
 .post-views{

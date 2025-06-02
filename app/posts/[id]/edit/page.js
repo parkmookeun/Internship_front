@@ -3,7 +3,7 @@ import { useEffect } from "react"
 import { useState } from 'react'
 import { useRouter } from 'next/navigation';
 import { useParams } from "next/navigation";
-import Pagination from "@/util/pagination";
+import Pagination from "@/components/Pagination";
 import ConfirmModal from "@/components/ConfirmModal";
 import AlertModal from "@/components/AlertModal";
 
