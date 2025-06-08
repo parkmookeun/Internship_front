@@ -1,6 +1,7 @@
 // components/CommentList.js
 import { useComments } from '@/hooks/useComments';
 import Pagination from '@/components/Pagination';
+import styles from "./CommentList.module.css";
 
 export default function CommentList({ postId }) {
   const { 
@@ -58,6 +59,10 @@ export default function CommentList({ postId }) {
               </div>
               <p style={{margin: '0', lineHeight: '1.4'}}>
                 {comment.contents}
+              </p>
+              <p className={styles.commentBtn}>
+                 <button>수정</button>
+                  <button>삭제</button>
               </p>
             </div>
           ))
