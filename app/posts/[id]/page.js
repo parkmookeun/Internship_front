@@ -20,15 +20,10 @@ export default function PostDetail() {
   const router = useRouter();
   const params = useParams();
   const id = params.id;
-
-  //
-  const handleDownloadRobust = async (s3Key, fileName) => {
+  const headers = getHeaders();
+  // 파일 다운로드 함수
+  const handleDownload = async (s3Key, fileName) => {
     try {
-      console.log("=== 강화된 다운로드 시작 ===");
-      console.log("S3 키:", s3Key);
-      console.log("파일명:", fileName);
-
-      // 입력 검증
       if (!s3Key) {
         throw new Error("S3 키가 제공되지 않았습니다.");
       }
@@ -38,14 +33,10 @@ export default function PostDetail() {
         console.log("파일명 자동 추출:", fileName);
       }
 
-      // 토큰 확인
       const authHeaders = getHeaders();
       if (!authHeaders.Authorization) {
         throw new Error("로그인이 필요합니다.");
       }
-
-      const encodedS3Key = encodeURIComponent(s3Key).replace(/%2F/g, "/");
-      console.log("인코딩된 S3 키:", encodedS3Key);
 
       const response = await fetch(
         `http://localhost:8080/api/files/download?fileKey=${s3Key}`,
@@ -58,7 +49,6 @@ export default function PostDetail() {
       );
 
       console.log("응답 상태:", response.status);
-      console.log("응답 헤더:", [...response.headers.entries()]);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -79,14 +69,12 @@ export default function PostDetail() {
       }
 
       const blob = await response.blob();
-      console.log("파일 타입:", blob.type);
       console.log("파일 크기:", blob.size, "bytes");
 
       if (blob.size === 0) {
         throw new Error("빈 파일입니다.");
       }
 
-      // 다운로드 실행
       const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = downloadUrl;
@@ -101,7 +89,6 @@ export default function PostDetail() {
     } catch (error) {
       console.error("❌ 다운로드 오류:", error);
 
-      // 사용자 친화적인 에러 메시지
       let userMessage = "파일 다운로드에 실패했습니다.";
 
       if (error.message.includes("로그인")) {
@@ -115,7 +102,8 @@ export default function PostDetail() {
       alert(userMessage);
     }
   };
-  // ✅ 추가: 이미지 파일인지 확인하는 함수
+
+  // 이미지 파일인지 확인하는 함수
   const isImageFile = (filePath) => {
     const imageExtensions = [
       ".jpg",
@@ -132,14 +120,79 @@ export default function PostDetail() {
     return imageExtensions.includes(extension);
   };
 
+  // ✅ 글 내용과 이미지를 함께 렌더링하는 함수
+  const renderContentWithImages = () => {
+    if (!board.contents) return null;
+
+    const imageFiles =
+      board.fileList?.filter((file) => isImageFile(file.filePath)) || [];
+
+    return (
+      <div style={{ lineHeight: "1.6" }}>
+        {/* 글 내용 */}
+        <div
+          style={{
+            marginBottom: imageFiles.length > 0 ? "20px" : "0",
+            whiteSpace: "pre-wrap", // 줄바꿈 유지
+          }}
+        >
+          {board.contents}
+        </div>
+
+        {/* 이미지들을 글 내용 아래에 표시 */}
+        {imageFiles.length > 0 && (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "15px",
+              marginTop: "20px",
+            }}
+          >
+            {imageFiles.map((file, index) => (
+              <div key={index} style={{ textAlign: "center" }}>
+                <img
+                  src={file.filePath}
+                  alt={file.originalName}
+                  style={{
+                    maxWidth: "100%",
+                    maxHeight: "400px",
+                    height: "auto",
+                    border: "1px solid #ddd",
+                    borderRadius: "5px",
+                    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                  }}
+                  onError={(e) => {
+                    e.target.style.display = "none";
+                    console.error("이미지 로드 실패:", file.filePath);
+                  }}
+                />
+                <p
+                  style={{
+                    margin: "8px 0 0 0",
+                    fontSize: "12px",
+                    color: "#888",
+                    fontStyle: "italic",
+                  }}
+                >
+                  {file.originalName}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const handleDelete = async () => {
     try {
       await fetch(`http://localhost:8080/api/posts/${id}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
+        headers,
       });
 
-      // alert("게시글이 성공적으로 삭제되었습니다!")
       router.push(`/posts`);
     } catch (error) {
       alert("게시글 삭제 실패");
@@ -148,11 +201,11 @@ export default function PostDetail() {
 
   const handlePostComment = async (e) => {
     e.preventDefault();
-    // 여기서 실제 등록 로직 실행
     try {
       await fetch(`http://localhost:8080/api/posts/${id}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({
           writer: commentWriter,
           contents: commentContents,
@@ -165,14 +218,11 @@ export default function PostDetail() {
     }
   };
 
-  console.log(id);
-  //useEffect
   useEffect(() => {
-    // 데이터 가져오기
     async function loadBoard() {
       try {
         setLoading(true);
-        const data = await fetchBoardById(id); // boardApi 함수 사용
+        const data = await fetchBoardById(id);
 
         setBoard(data);
         setError(null);
@@ -185,10 +235,8 @@ export default function PostDetail() {
     }
 
     loadBoard();
-  }, [id]); // id가 변경될 때마다 실행되도록 의존성 배열에 추가
+  }, [id]);
 
-  //출력해보기 ->
-  console.log(board);
   return (
     <div>
       <div className="board-detail-container">
@@ -225,8 +273,11 @@ export default function PostDetail() {
               <td colSpan={2}>{board.writer}</td>
             </tr>
             <tr style={{ border: "1px solid black", padding: "8px" }}>
-              <td style={{ padding: "8px" }}>내용:</td>
-              <td colSpan={2}>{board.contents}</td>
+              <td style={{ padding: "8px", verticalAlign: "top" }}>내용:</td>
+              <td colSpan={2} style={{ padding: "15px" }}>
+                {/* ✅ 글 내용과 이미지를 함께 표시 */}
+                {renderContentWithImages()}
+              </td>
             </tr>
 
             <tr style={{ textAlign: "center", padding: "none" }}>
@@ -258,109 +309,70 @@ export default function PostDetail() {
             </tr>
           </tbody>
         </table>
-        {/* ✅ 추가: 게시글 내용 아래에 이미지 표시 영역 */}
-        {board.fileList && board.fileList.length > 0 && (
-          <div
-            style={{
-              margin: "20px auto",
-              width: "80%",
-              padding: "15px",
-              border: "1px solid #ddd",
-              borderRadius: "5px",
-              backgroundColor: "#f9f9f9",
-            }}
-          >
-            <h4 style={{ margin: "0 0 15px 0" }}>📷 첨부 이미지</h4>
+
+        {/* ✅ 첨부파일 다운로드 영역 (이미지가 아닌 파일들만) */}
+        {board.fileList &&
+          board.fileList.filter((file) => !isImageFile(file.filePath)).length >
+            0 && (
             <div
-              style={{ display: "flex", flexDirection: "column", gap: "15px" }}
+              style={{
+                margin: "20px auto",
+                width: "80%",
+                padding: "15px",
+                border: "1px solid #ddd",
+                borderRadius: "5px",
+                backgroundColor: "#f9f9f9",
+              }}
             >
-              {board.fileList
-                .filter((file) => isImageFile(file.filePath)) // 이미지 파일만 필터링
-                .map((file, index) => (
-                  <div key={index} style={{ textAlign: "center" }}>
-                    <img
-                      src={file.filePath}
-                      alt={file.originalName}
-                      style={{
-                        maxWidth: "100%",
-                        maxHeight: "500px",
-                        height: "auto",
-                        border: "1px solid #ddd",
-                        borderRadius: "5px",
-                        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                      }}
-                      onError={(e) => {
-                        e.target.style.display = "none";
-                        console.error("이미지 로드 실패:", file.filePath);
-                      }}
-                    />
-                    <p
-                      style={{
-                        margin: "8px 0 0 0",
-                        fontSize: "14px",
-                        color: "#666",
-                        fontStyle: "italic",
-                      }}
-                    >
-                      {file.originalName}
-                    </p>
-                  </div>
-                ))}
+              <h4 style={{ margin: "0 0 10px 0" }}>📎 첨부파일</h4>
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+              >
+                {board.fileList
+                  .filter((file) => !isImageFile(file.filePath)) // 이미지가 아닌 파일들만
+                  .map((file, index) => {
+                    const fileName = file.originalName;
+                    return (
+                      <div
+                        key={index}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          padding: "8px 12px",
+                          backgroundColor: "white",
+                          borderRadius: "3px",
+                          border: "1px solid #eee",
+                        }}
+                      >
+                        <div style={{ flex: 1 }}>
+                          <span style={{ fontWeight: "bold" }}>{fileName}</span>
+                          <br />
+                          <small style={{ color: "#666" }}>
+                            {file.mimeType} • {Math.round(file.fileSize / 1024)}
+                            KB
+                          </small>
+                        </div>
+                        <button
+                          onClick={() => handleDownload(file.s3Key, fileName)}
+                          style={{
+                            padding: "6px 12px",
+                            fontSize: "12px",
+                            backgroundColor: "#28a745",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "3px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          다운로드
+                        </button>
+                      </div>
+                    );
+                  })}
+              </div>
             </div>
-          </div>
-        )}
-        {/*별도 첨부파일 영역 (테이블 외부에 표시하고 싶을 경우) */}
-        {board.fileList && board.fileList.length > 0 && (
-          <div
-            style={{
-              margin: "20px auto",
-              width: "80%",
-              padding: "15px",
-              border: "1px solid #ddd",
-              borderRadius: "5px",
-              backgroundColor: "#f9f9f9",
-            }}
-          >
-            <h4 style={{ margin: "0 0 10px 0" }}>📎 첨부파일</h4>
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "8px" }}
-            >
-              {board.fileList.map((file, index) => {
-                const fileName = file.originalName;
-                return (
-                  <div
-                    key={index}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      padding: "8px 12px",
-                      backgroundColor: "white",
-                      borderRadius: "3px",
-                      border: "1px solid #eee",
-                    }}
-                  >
-                    <span>{fileName}</span>
-                    <button
-                      onClick={() => handleDownloadRobust(file.s3Key, fileName)}
-                      style={{
-                        padding: "6px 12px",
-                        fontSize: "12px",
-                        backgroundColor: "#28a745",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "3px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      다운로드
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+          )}
 
         {/* 댓글 작성 폼 */}
         <div className={styles.commentInput}>
@@ -383,7 +395,7 @@ export default function PostDetail() {
           </form>
         </div>
 
-        {/* 여기에다가 댓글 목록 표시 */}
+        {/* 댓글 목록 */}
         <CommentList postId={id}></CommentList>
       </div>
       {showConfirmModal && (
