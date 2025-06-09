@@ -88,7 +88,7 @@ export const updateBoard = async (id, title, contents) => {
   }
 };
 
-function getHeaders() {
+export function getHeaders() {
   const headers = {
     "Content-Type": "application/json",
   };

@@ -7,7 +7,7 @@ import { useComments } from "@/hooks/useComments";
 import ConfirmModal from "@/components/ConfirmModal";
 import CommentList from "@/components/CommentList";
 import styles from "./[id].module.css";
-import { fetchBoardById } from "@/util/boardApi";
+import { fetchBoardById, getHeaders } from "@/util/boardApi";
 
 export default function PostDetail() {
   const [loading, setLoading] = useState(true);
@@ -21,12 +21,100 @@ export default function PostDetail() {
   const params = useParams();
   const id = params.id;
 
-  // ✅ 추가: 파일 다운로드 함수
-  const handleDownload = (fileUrl, fileName) => {
-    // 새 탭에서 파일 열기 (브라우저가 다운로드 처리)
-    window.open(fileUrl, "_blank");
-  };
+  //
+  const handleDownloadRobust = async (s3Key, fileName) => {
+    try {
+      console.log("=== 강화된 다운로드 시작 ===");
+      console.log("S3 키:", s3Key);
+      console.log("파일명:", fileName);
 
+      // 입력 검증
+      if (!s3Key) {
+        throw new Error("S3 키가 제공되지 않았습니다.");
+      }
+
+      if (!fileName) {
+        fileName = s3Key.split("/").pop();
+        console.log("파일명 자동 추출:", fileName);
+      }
+
+      // 토큰 확인
+      const authHeaders = getHeaders();
+      if (!authHeaders.Authorization) {
+        throw new Error("로그인이 필요합니다.");
+      }
+
+      const encodedS3Key = encodeURIComponent(s3Key).replace(/%2F/g, "/");
+      console.log("인코딩된 S3 키:", encodedS3Key);
+
+      const response = await fetch(
+        `http://localhost:8080/api/files/download?fileKey=${s3Key}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: authHeaders.Authorization,
+          },
+        }
+      );
+
+      console.log("응답 상태:", response.status);
+      console.log("응답 헤더:", [...response.headers.entries()]);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("서버 에러 응답:", errorText);
+
+        switch (response.status) {
+          case 401:
+            throw new Error("로그인이 만료되었습니다. 다시 로그인해주세요.");
+          case 403:
+            throw new Error("파일 다운로드 권한이 없습니다.");
+          case 404:
+            throw new Error("파일을 찾을 수 없습니다.");
+          case 500:
+            throw new Error("서버 오류가 발생했습니다.");
+          default:
+            throw new Error(`다운로드 실패: ${response.status} - ${errorText}`);
+        }
+      }
+
+      const blob = await response.blob();
+      console.log("파일 타입:", blob.type);
+      console.log("파일 크기:", blob.size, "bytes");
+
+      if (blob.size === 0) {
+        throw new Error("빈 파일입니다.");
+      }
+
+      // 다운로드 실행
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = fileName;
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+
+      console.log("✅ 다운로드 완료!");
+    } catch (error) {
+      console.error("❌ 다운로드 오류:", error);
+
+      // 사용자 친화적인 에러 메시지
+      let userMessage = "파일 다운로드에 실패했습니다.";
+
+      if (error.message.includes("로그인")) {
+        userMessage = "로그인이 필요합니다. 다시 로그인해주세요.";
+      } else if (error.message.includes("권한")) {
+        userMessage = "파일 다운로드 권한이 없습니다.";
+      } else if (error.message.includes("찾을 수 없습니다")) {
+        userMessage = "파일을 찾을 수 없습니다.";
+      }
+
+      alert(userMessage);
+    }
+  };
   // ✅ 추가: 이미지 파일인지 확인하는 함수
   const isImageFile = (filePath) => {
     const imageExtensions = [
@@ -254,7 +342,7 @@ export default function PostDetail() {
                   >
                     <span>{fileName}</span>
                     <button
-                      onClick={() => handleDownload(file.filePath, fileName)}
+                      onClick={() => handleDownloadRobust(file.s3Key, fileName)}
                       style={{
                         padding: "6px 12px",
                         fontSize: "12px",

@@ -3,6 +3,7 @@
 import ConfirmModal from "@/components/ConfirmModal";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Tiptap from "@/components/Tiptap";
 
 export default function Home() {
   const [email, setEmail] = useState("");
@@ -99,6 +100,7 @@ export default function Home() {
           </div>
         </form>
       </div>
+      <Tiptap />
     </div>
   );
 }
